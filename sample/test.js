@@ -1,0 +1,2 @@
+var sample = require('sample');
+
