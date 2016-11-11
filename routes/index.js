@@ -1,4 +1,5 @@
 var express = require('express');
+var esrecurse = require('esrecurse');
 var router = express.Router();
 
 var escope = require('escope');
@@ -10,7 +11,11 @@ var Enums = require('../data/Enums');
 var scopeChain = [];
 var assignments = [];
 
-var ast = esprima.parse(fs.readFileSync('./routes/index.js', 'utf-8'), { loc: true });
+var get_order_funcs = ['get_order_step0', 'get_order_step1', 'get_order_step2', 'get_order_step3'];
+var services = ['cartService', 'couponService', 'discountService', 'itemService', 'memberService', 'orderService', 'paymentService', 'shippingService'];
+
+//var ast = esprima.parse(fs.readFileSync('./sample/sample.code', 'utf-8'), { loc: false });
+var ast = esprima.parse(fs.readFileSync('../ESG.OD.Nova_FE_Mobile/server/routes/ko/order/order.js', 'utf-8'), { loc: true });
 var scopeManager = escope.analyze(ast);
 var currentScope = scopeManager.acquire(ast);
 
@@ -25,58 +30,35 @@ estraverse.traverse(ast, {
 });
 
 function enter(node) {
-  if (createsNewScope(node)) {
-    currentScope = scopeManager.acquire(node);
-    //console.log(currentScope);
-    console.log(node);
+  try {
+    if (get_order_funcs.indexOf(node.id.name) !== -1) {
+      console.log('in ' + node.id.name);
+      var bodies = node.body.body;
+      bodies.forEach(function (body) {
+        if (body.type === 'ExpressionStatement') {
+            esrecurse.visit(body, {
+              MemberExpression: function(node) {
+                if (node.object.type === 'Identifier' && services.indexOf(node.object.name) !== -1) {
+                  this.visit(node.left);
+                  console.log(JSON.stringify(node));
+                  this.visit(node.right);
+                }
+              }
+            });
+          }
+        });
+      }
+    }
+  catch (e) {
+    //console.log(e.stack);
   }
-
-/*  if (node.type === 'VariableDeclarator'){
-    var currentScope = scopeChain[scopeChain.length - 1];
-    currentScope.push(node.id.name);
-  }
-
-  if (node.type === 'AssignmentExpression'){
-    assignments.push(node);
-  }*/
+  //}
 }
 
 function leave(node) {
-  if (createsNewScope(node)) {
+  /*if (createsNewScope(node)) {
     currentScope = currentScope.upper;
-  }
-}
-
-function isVarDefined(varname, scopeChain) {
-  for (var i = 0; i < scopeChain.length; i++) {
-    var scope = scopeChain[i];
-    if (scope.indexOf(varname) !== -1) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function checkForLeaks(assignments, scopeChain) {
-  for (var i = 0; i < assignments.length; i++) {
-    var assignment = assignments[i];
-    var varName = assignment.left.name;
-    if (!isVarDefined(varName, scopeChain)) {
-      console.log(JSON.stringify(assignment));
-      console.log('Leaked global', varName,
-          'on line', assignment.loc.start.line);
-    }
-  }
-}
-
-function createsNewScope(node) {
-  return node.type === 'FunctionDeclaration' ||
-      node.type === 'FunctionExpression'; /*||
-      node.type === 'Program';*/
-}
-
-function isWhatIamLookingFor(node) {
-
+  }*/
 }
 
 module.exports = router;
