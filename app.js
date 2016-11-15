@@ -7,6 +7,14 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 
+var routerParser = require('./parser/routerParser');
+var serviceParser = require('./parser/serviceParser');
+
+
+//routerParser.parseRouter('order/order.js');
+//serviceParser.parseService('/models/coupon.js');
+serviceParser.parseService('/services/orderService.js');
+
 var app = express();
 
 // view engine setup
@@ -21,7 +29,7 @@ var app = express();
 //app.use(cookieParser());
 //app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
+//app.use('/', routes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
