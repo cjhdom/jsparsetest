@@ -16,6 +16,7 @@
     "esrecurse": "^4.1.0",
     "estraverse": "4.2.0",
     "express": "~4.13.4",
+    "lodash": "^4.17.2",
     "morgan": "~1.7.0",
     "serve-favicon": "~2.3.0"
   }

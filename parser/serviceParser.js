@@ -6,21 +6,25 @@ var estraverse = require('estraverse');
 var fs = require('fs');
 var Enums = require('../data/Enums');
 
-var serviceParser = require('./serviceParser.js');
-
 var service = null;
-var result = [];
+var result = null;
 
 //var ast = esprima.parse(fs.readFileSync('./sample/sample.code', 'utf-8'), { loc: false });
 module.exports = exports = {};
 
-exports.parseService = function (filePath) {
+exports.parseService = function (name, filePath) {
     //../ESG.OD.Nova_FE_Mobile/server/routes/ko/order/order.js
+    result = {
+        name: name,
+        methods: []
+    };
+
     var ast = esprima.parse(fs.readFileSync('../ESG.OD.Nova_FE_Mobile/server/' + filePath, 'utf-8'));
 
     estraverse.traverse(ast, {
-        enter: function (node, parent) {
+        enter: function (node) {
             //console.log(JSON.stringify(node));
+            //console.log(JSON.stringify(result));
             switch (node.type) {
                 case 'AssignmentExpression':
                     AssignmentExpressionSearch(node);
@@ -39,7 +43,7 @@ exports.parseService = function (filePath) {
     });
 
     console.log(JSON.stringify(result));
-    //return result;
+    return result;
 };
 
 function isCallByRequire(node) {
@@ -61,29 +65,27 @@ function isCallByExports(node) {
 function AssignmentExpressionSearch(node) {
     //console.log(JSON.stringify(node));
     if (isCallByRequire(node)) {
-        /*result.push({
+        result.methods.push({
             name: node.left.property.name,
             called: []
-        });*/
+        });
 
-        console.log('called by require ' + node.left.property.name);
+        //console.log('called by require ' + node.left.property.name);
 
     } else if (isCallByPrototype(node)) {
-        /*result.push({
-         name: node.left.property.name,
-         called: []
-         });*/
-
-        console.log('called by prototype ' + node.left.property.name);
-
-    } else if (isCallByExports(node)) {
-        /*result.push({
+        result.methods.push({
          name: node.left.property.name,
          called: []
          });
-*/
-        console.log('called by exports ' + node.left.property.name);
 
+        //console.log('called by prototype ' + node.left.property.name);
+
+    } else if (isCallByExports(node)) {
+        result.push({
+         name: node.left.property.name,
+         called: []
+         });
+        //console.log('called by exports ' + node.left.property.name);
     }
 }
 
@@ -95,17 +97,21 @@ function VariableDeclaratorSearch(node) {
 }
 
 function MemberExpressionSearch(node) {
-    var idx = result.length - 1;
+    var idx = result.methods.length - 1;
     //console.log(JSON.stringify(node));
     if (node.object.type === 'Identifier' && node.object.name.toLowerCase().indexOf('client') !== -1) {
 
-        console.log('service ' + node.object.name + ',' + node.property.name);
-        /*result[idx].called.push({
+        //console.log('service ' + node.object.name + ',' + node.property.name);
+        result.methods[idx].called.push({
             object: node.object.name,
             property: node.property.name
-        });*/
+        });
     } else if (node.object.type === 'MemberExpression' && node.object.object.type === 'ThisExpression' && node.object.property.name === 'client') {
-        console.log('service ' + node.object.property.name + ',' + node.property.name);
+        //console.log('service ' + node.object.property.name + ',' + node.property.name);
+        result.methods[idx].called.push({
+            object: node.object.property.name,
+            property: node.property.name
+        });
     }/* else {
      return false;
      }

@@ -1,19 +1,75 @@
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+
+var _ = require('lodash');
 
 var routes = require('./routes/index');
 
-var routerParser = require('./parser/routerParser');
-var serviceParser = require('./parser/serviceParser');
+//var routerParser = require('./parser/methodParser');
+//var mapper = require('./data/mapper');
+var testParser = require('./parser/testParser');
+
+testParser.parseTest();
+
+var result = {
+  name: null,
+  methods: null
+};
 
 
-//routerParser.parseRouter('order/order.js');
+
+/*var routerResult = routerParser.parseRouter('order/orderComplete.js');
+console.log('start!!------------------------------------');
+routerResult.forEach(function(method) {
+  if (method.uses.length > 0) {
+    console.log('in ' + method.name);
+    method.uses.forEach(function(usedMethod) {
+      var clientMapper = mapper.getClientMapper(usedMethod.name);
+
+      if (clientMapper) {
+        //console.log('mapper ' + JSON.stringify(clientMapper));
+        //console.log('method ' + JSON.stringify(usedMethod));
+
+        var serviceMethods = _.find(clientMapper.methods, { name: usedMethod.method });
+
+        if (typeof serviceMethods !== 'undefined') {
+          serviceMethods.called.forEach(function(serviceMethod) {
+            console.log('called ' + serviceMethod.property);
+          });
+        }
+      } else {
+        console.log('couldn\'t find definition for ' + JSON.stringify(usedMethod));
+      }
+    });
+  }
+});*/
+
+
+
 //serviceParser.parseService('/models/coupon.js');
-serviceParser.parseService('/services/orderService.js');
+//var result = modelParser.parseModel('/models/shippingaddress.js');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 var app = express();
 
